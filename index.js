@@ -18,6 +18,7 @@ class connection extends ws {
 			callback.forEach(f => f(data))
 			this.emit('ready')
 			this.on('message', this.handleMsg)
+			// this.on('error', console.log)
 		})
 
 	}
@@ -37,8 +38,22 @@ class connection extends ws {
 		}`)
 	}
 	
-	sendMsg() {
-		
+	post(msg, parent = null, ...callback) {
+
+		this.send(`{
+		"type": "broadcast",
+		"data": {
+		"type": "post",
+		"nick": "${this.nick}",
+		"text": "${msg}",
+		"parent": "${parent}"
+		}
+		}`)
+	
+		this.once('reply', data => {
+			log('msg')
+			callback.forEach(f => f())
+		})
 	}
 
 	ping(...callback) {
@@ -53,11 +68,16 @@ class connection extends ws {
 	
 	nick(nick, ...callback) {
 		this.send(`{
+		"type": "broadcast",
+		"data": {
 		"type": "nick",
 		"nick": "${nick}"
+		}
 		}`)
 	
 		this.once('identity', data => {
+			log('nick')
+			this.nick = nick
 			callback.forEach(f => f())
 		})
 	}
