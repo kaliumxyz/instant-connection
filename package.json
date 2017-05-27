@@ -1,0 +1,25 @@
+{
+  "name": "instant-connection",
+  "version": "0.1.2",
+  "description": "A simple connection lib for instant.",
+  "main": "index.js",
+  "repository": "https://github.com/kaliumxyz/instant-connection",
+  "author": "kalium",
+  "license": "MIT",
+  "dependencies": {
+    "k-log": "^0.5.0",
+    "ws": "^3.0.0"
+  },
+  "devDependencies": {
+    "ava": "^0.19.1"
+  },
+  "keywords": [
+    "euphoria",
+    "euphoria.io",
+    "websocket",
+    "magic"
+  ],
+  "scripts": {
+    "test": "ava"
+  }
+}
