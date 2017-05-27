@@ -1,5 +1,5 @@
 # instant-connection [![Build Status](https://travis-ci.org/kaliumxyz/instant-connection.svg?branch=master)](https://travis-ci.org/kaliumxyz/instant-connection)
-> make connections to [instant.io](https://instant.io/) :D.
+> make connections to [instant](https://instant.leet.nu/) :D.
 
 ## install
 simply download it from npm.

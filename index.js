@@ -1,8 +1,5 @@
 'use strict'
 const ws = require('ws')
-// let logger = require('k-log')
-// logger = new logger('instantconn.log', true)
-// const log = logger.log.bind(this)
 const log = console.log
 
 class connection extends ws {
@@ -12,7 +9,7 @@ class connection extends ws {
 
 		// Setting the basics for the connection.
 		this.on('open', data => {
-			log('opened!')
+			// log('opened!')
 			const dt = JSON.stringify(data)
 			// log(data)
 			callback.forEach(f => f(data))
@@ -28,7 +25,7 @@ class connection extends ws {
 
 	handleMsg(data, flags) {
 		const dt = JSON.parse(data)
-		log(data)
+		// log(data)
 		this.emit(dt.type)
 	}
 
@@ -51,7 +48,7 @@ class connection extends ws {
 		}`)
 	
 		this.once('reply', data => {
-			log('msg')
+			// log('msg')
 			callback.forEach(f => f())
 		})
 	}
@@ -76,7 +73,7 @@ class connection extends ws {
 		}`)
 	
 		this.once('identity', data => {
-			log('nick')
+			// log('nick')
 			this.nick = nick
 			callback.forEach(f => f())
 		})
