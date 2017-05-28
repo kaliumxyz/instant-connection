@@ -10,7 +10,7 @@ test('can connect', async t => {
 		const testConnection = new connection('test')
 		testConnection.on('ready', data => testConnection.ping(resolve))
 	})
-
+	
 	t.is(await testPromise)
 })
 
