@@ -20,16 +20,16 @@ test('can change name', async t => {
 		testConnection.on('ready', data => testConnection.nick("pew",resolve))
 	})
 
-	t.is(await testPromise)
+	t.truthy(await testPromise)
 })
 
 test('can send msg', async t => {
 	const testPromise = new Promise((resolve, reject) => {
 		const testConnection = new connection('test')
 		testConnection.on('ready', data => testConnection.nick("pew", _ => {
-			testConnection.post("hai", null, resolve)
+			testConnection.post("post", null, resolve)
 		}))
 	})
 
-	t.is(await testPromise)
+	t.truthy(await testPromise)
 })
