@@ -5,7 +5,7 @@ class connection extends ws {
 	constructor (room = 'welcome', uri = 'https://instant.leet.nu', options = {origin: 'instant.leet.nu'}, ...callback) {
 		super(uri + '/room/' + room + "/ws", options)
 		this.room = room
-
+		this.seq = 0
 		// Setting the basics for the connection.
 		this.on('open', data => {
 			callback.forEach(f => f(data))
@@ -21,6 +21,7 @@ class connection extends ws {
 
 	quit() {
 		this.send(`{
+		"seq": ${this.seq++},
 		"type": "part"
 		}`)
 	}
@@ -29,6 +30,7 @@ class connection extends ws {
 
 		this.send(`{
 		"type": "broadcast",
+		"seq": ${this.seq++},
 		"data": {
 		"type": "post",
 		"nick": "${this.nick}",
@@ -42,8 +44,27 @@ class connection extends ws {
 		})
 	}
 
+	pm(msg, recipient, ...callback) {
+
+		this.send(`{
+		"type": "unicast",
+		"seq": ${this.seq++},
+		"to": ${recipient},
+		"data": {
+		"nick": "${this.nick}",
+		"text": "${msg}",
+		"type": "privmsg",
+		}
+		}`)
+	
+		this.once('reply', data => {
+			callback.forEach(f => f())
+		})
+	}
+
 	ping(...callback) {
 		this.send(`{
+		"seq": ${this.seq++},
 		"type": "ping"
 		}`)
 	
@@ -55,6 +76,7 @@ class connection extends ws {
 	nick(nick, ...callback) {
 		this.send(`{
 		"type": "broadcast",
+		"seq": ${this.seq++},
 		"data": {
 		"type": "nick",
 		"nick": "${nick}"
