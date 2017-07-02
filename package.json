@@ -1,6 +1,6 @@
 {
   "name": "instant-connection",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A simple connection lib for instant.",
   "main": "index.js",
   "repository": "https://github.com/kaliumxyz/instant-connection",
