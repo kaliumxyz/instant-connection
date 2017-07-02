@@ -16,11 +16,11 @@ class connection extends ws {
 		})
 		this.on('who', data => {
 			this.send(JSON.stringify({
-				"type": "unicast",
-				"seq": this.seq++,
-				"data": {
-				"type": "nick",
-				"nick": this.nick
+				type: "unicast",
+				seq: this.seq++,
+				data: {
+					type: "nick",
+					nick: this.nick
 				}
 			}))
 		})
@@ -35,14 +35,14 @@ class connection extends ws {
 	post(msg, parent = null, ...callback) {
 
 		this.send(JSON.stringify({
-		"type": "broadcast",
-		"seq": this.seq++,
-		"data": {
-		"type": "post",
-		"nick": this.nick,
-		"text": msg,
-		"parent": parent
-		}
+			type: "broadcast",
+			seq: this.seq++,
+			data: {
+				type: "post",
+				nick: this.nick,
+				text: msg,
+				parent: parent
+			}
 		}))
 
 		this.once('reply', data => {
@@ -53,14 +53,14 @@ class connection extends ws {
 	pm(msg, recipient, ...callback) {
 
 		this.send(JSON.stringify({
-		"type": "unicast",
-		"seq": this.seq++,
-		"to": recipient,
-		"data": {
-		"nick": this.nick,
-		"text": msg,
-		"type": "privmsg",
-		}
+			type: "unicast",
+			seq: this.seq++,
+			to: recipient,
+			data: {
+				nick: this.nick,
+				text: msg,
+				type: "privmsg",
+			}
 		}))
 
 		this.once('reply', data => {
@@ -70,8 +70,8 @@ class connection extends ws {
 
 	ping(...callback) {
 		this.send(JSON.stringify({
-		"seq": this.seq++,
-		"type": "ping"
+			seq: this.seq++,
+			type: "ping"
 		}))
 
 		this.once('pong', data => {
@@ -81,12 +81,12 @@ class connection extends ws {
 
 	nick(nick, ...callback) {
 		this.send(JSON.stringify({
-		"type": "broadcast",
-		"seq": this.seq++,
-		"data": {
-		"type": "nick",
-		"nick": nick
-		}
+			type: "broadcast",
+			seq: this.seq++,
+			data: {
+				type: "nick",
+				nick: nick
+			}
 		}))
 
 		this.once('reply', data => {
