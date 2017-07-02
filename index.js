@@ -1,14 +1,10 @@
 'use strict'
 const ws = require('ws')
 /* TODO:
- * Xyzzy pointed out that JSON.parse is not a huge fan of invalid JSON,
- * We will run into problems when parsing something like: {"msg": """"}.
- * 
  * - uuid.
- * - logging features.
  */
 class connection extends ws {
-	constructor (room = 'welcome', uri = 'https://instant.leet.nu', options = {origin: 'instant.leet.nu'}, ...callback) {
+	constructor(room = 'welcome', uri = 'https://instant.leet.nu', options = { origin: 'instant.leet.nu' }, ...callback) {
 		super(uri + '/room/' + room + "/ws", options)
 		this.room = room
 		this.seq = 0
@@ -19,15 +15,16 @@ class connection extends ws {
 			this.on('message', this.handleMsg)
 		})
 		this.on('who', data => {
-			this.send(`{
+			this.send(JSON.stringify({
 				"type": "unicast",
-				"seq": ${this.seq++},
+				"seq": this.seq++,
 				"data": {
 				"type": "nick",
-				"nick": "${this.nick}"
+				"nick": this.nick
 				}
-			}`)
+			}))
 		})
+
 	}
 
 	handleMsg(data, flags) {
@@ -37,17 +34,17 @@ class connection extends ws {
 
 	post(msg, parent = null, ...callback) {
 
-		this.send(`{
+		this.send(JSON.stringify({
 		"type": "broadcast",
-		"seq": ${this.seq++},
+		"seq": this.seq++,
 		"data": {
 		"type": "post",
-		"nick": "${this.nick}",
-		"text": "${msg}",
-		"parent": ${parent ? `"${parent}"` : parent}
+		"nick": this.nick,
+		"text": msg,
+		"parent": parent
 		}
-		}`)
-	
+		}))
+
 		this.once('reply', data => {
 			callback.forEach(f => f(data))
 		})
@@ -55,48 +52,49 @@ class connection extends ws {
 
 	pm(msg, recipient, ...callback) {
 
-		this.send(`{
+		this.send(JSON.stringify({
 		"type": "unicast",
-		"seq": ${this.seq++},
-		"to": "${recipient}",
+		"seq": this.seq++,
+		"to": recipient,
 		"data": {
-		"nick": "${this.nick}",
-		"text": "${msg}",
+		"nick": this.nick,
+		"text": msg,
 		"type": "privmsg",
 		}
-		}`)
-	
+		}))
+
 		this.once('reply', data => {
 			callback.forEach(f => f(data))
 		})
 	}
 
 	ping(...callback) {
-		this.send(`{
-		"seq": ${this.seq++},
+		this.send(JSON.stringify({
+		"seq": this.seq++,
 		"type": "ping"
-		}`)
-	
+		}))
+
 		this.once('pong', data => {
 			callback.forEach(f => f())
 		})
 	}
-	
+
 	nick(nick, ...callback) {
-		this.send(`{
+		this.send(JSON.stringify({
 		"type": "broadcast",
-		"seq": ${this.seq++},
+		"seq": this.seq++,
 		"data": {
 		"type": "nick",
-		"nick": "${nick}"
+		"nick": nick
 		}
-		}`)
-	
+		}))
+
 		this.once('reply', data => {
 			this.nick = nick
 			callback.forEach(f => f(data))
 		})
 	}
+
 }
 
 module.exports = connection
