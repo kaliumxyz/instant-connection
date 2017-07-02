@@ -33,3 +33,16 @@ test('can send msg', async t => {
 
 	t.truthy(await testPromise)
 })
+
+test('can reply', async t => {
+	const testPromise = new Promise((resolve, reject) => {
+		const testConnection = new connection('test')
+		testConnection.on('ready', data => testConnection.nick("pew", _ => {
+			testConnection.post("post", null, data => {
+				testConnection.post("post", data.data.id, resolve)
+			}) 
+		}))
+	})
+
+	t.truthy(await testPromise)
+})

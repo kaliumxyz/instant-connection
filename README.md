@@ -4,7 +4,7 @@
 ## install
 simply download it from npm.
 ```
-$ yarn add instant-connection
+$ npm install instant-connection
 ```
 
 
@@ -19,7 +19,7 @@ connections will default to the &test room. Once you've created a connection you
 
 ## tests
 ```
-$ yarn test
+$ npm test
 ```
 
 ## license

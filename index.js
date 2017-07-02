@@ -44,7 +44,7 @@ class connection extends ws {
 		"type": "post",
 		"nick": "${this.nick}",
 		"text": "${msg}",
-		"parent": ${parent}
+		"parent": ${parent ? `"${parent}"` : parent}
 		}
 		}`)
 	
@@ -58,7 +58,7 @@ class connection extends ws {
 		this.send(`{
 		"type": "unicast",
 		"seq": ${this.seq++},
-		"to": ${recipient},
+		"to": "${recipient}",
 		"data": {
 		"nick": "${this.nick}",
 		"text": "${msg}",
