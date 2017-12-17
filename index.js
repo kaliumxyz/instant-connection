@@ -5,21 +5,27 @@ const ws = require('ws')
  */
 class connection extends ws {
 	constructor(room = 'welcome', uri = 'https://instant.leet.nu', options = { origin: 'instant.leet.nu' }, ...callback) {
-		super(uri + '/room/' + room + "/ws", options)
+		super(uri + '/room/' + room + '/ws', options)
 		this.room = room
 		this.seq = 0
+		this.id = ''
+		this.uuid = ''
 		// Setting the basics for the connection.
 		this.once('open', data => {
 			callback.forEach(f => f(data))
 			this.emit('ready')
 			this.on('message', this.handleMsg)
 		})
+		this.once('identity', data => {
+			this.id = data.id
+			this.uuid = data.uuid
+		})
 		this.on('who', data => {
 			this.send(JSON.stringify({
-				type: "unicast",
+				type: 'unicast',
 				seq: this.seq++,
 				data: {
-					type: "nick",
+					type: 'nick',
 					nick: this.nick
 				}
 			}))
@@ -33,19 +39,18 @@ class connection extends ws {
 	}
 
 	post(msg, parent = null, ...callback) {
-
 		this.send(JSON.stringify({
-			type: "broadcast",
+			type: 'broadcast',
 			seq: this.seq++,
 			data: {
-				type: "post",
+				type: 'post',
 				nick: this.nick,
 				text: msg,
 				parent: parent
 			}
 		}))
 
-		this.once('reply', data => {
+		this.once('response', data => {
 			callback.forEach(f => f(data))
 		})
 	}
@@ -53,17 +58,18 @@ class connection extends ws {
 	pm(msg, recipient, ...callback) {
 
 		this.send(JSON.stringify({
-			type: "unicast",
+			type: 'unicast',
 			seq: this.seq++,
+			uuid: this.uuid,
 			to: recipient,
 			data: {
 				nick: this.nick,
 				text: msg,
-				type: "privmsg",
+				type: 'privmsg',
 			}
 		}))
 
-		this.once('reply', data => {
+		this.once('response', data => {
 			callback.forEach(f => f(data))
 		})
 	}
@@ -71,25 +77,34 @@ class connection extends ws {
 	ping(...callback) {
 		this.send(JSON.stringify({
 			seq: this.seq++,
-			type: "ping"
+			type: 'ping'
 		}))
 
 		this.once('pong', data => {
 			callback.forEach(f => f())
 		})
 	}
+	who(...callback) {
+		this.send(JSON.stringify({
+			type: 'broadcast',
+			seq: this.seq++,
+			data: {type: 'who'}
+		}))
+		callback.forEach(f => f())
+	}
 
 	nick(nick, ...callback) {
 		this.send(JSON.stringify({
-			type: "broadcast",
+			type: 'broadcast',
 			seq: this.seq++,
 			data: {
-				type: "nick",
+				type: 'nick',
+				uuid: this.uuid,
 				nick: nick
 			}
 		}))
 
-		this.once('reply', data => {
+		this.once('response', data => {
 			this.nick = nick
 			callback.forEach(f => f(data))
 		})

@@ -8,7 +8,8 @@ test('can create connection',t => {
 test('can connect', async t => {
 	const testPromise = new Promise((resolve, reject) => {
 		const testConnection = new connection('test')
-		testConnection.on('ready', data => testConnection.ping(resolve))
+		testConnection.once('ready', data => testConnection.ping(resolve))
+		setTimeout(() => reject('timed out'), 10000)
 	})
 	
 	t.is(await testPromise)
@@ -17,7 +18,8 @@ test('can connect', async t => {
 test('can change name', async t => {
 	const testPromise = new Promise((resolve, reject) => {
 		const testConnection = new connection('test')
-		testConnection.on('ready', data => testConnection.nick("pew",resolve))
+		testConnection.once('ready', data => testConnection.nick("pew",resolve))
+		setTimeout(() => reject('timed out'), 10000)
 	})
 
 	t.truthy(await testPromise)
@@ -26,22 +28,24 @@ test('can change name', async t => {
 test('can send msg', async t => {
 	const testPromise = new Promise((resolve, reject) => {
 		const testConnection = new connection('test')
-		testConnection.on('ready', data => testConnection.nick("pew", _ => {
-			testConnection.post("post", null, resolve)
+		testConnection.once('ready', data => testConnection.nick("pew", _ => {
+			testConnection.post("post", null, () => resolve(true))
 		}))
+		setTimeout(() => reject('timed out'), 10000)
 	})
 
-	t.truthy(await testPromise)
+	t.true(await testPromise)
 })
 
 test('can reply', async t => {
 	const testPromise = new Promise((resolve, reject) => {
 		const testConnection = new connection('test')
-		testConnection.on('ready', data => testConnection.nick("pew", _ => {
+		testConnection.once('ready', data => testConnection.nick("pew", _ => {
 			testConnection.post("post", null, data => {
 				testConnection.post("post", data.data.id, resolve)
 			}) 
 		}))
+		setTimeout(() => reject('timed out'), 10000)
 	})
 
 	t.truthy(await testPromise)
