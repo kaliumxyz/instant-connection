@@ -36,6 +36,8 @@ class connection extends ws {
 	handleMsg(data, flags) {
 		const dt = JSON.parse(data)
 		this.emit(dt.type, dt)
+		if(dt.type === 'broadcast')
+			this.emit(dt.data.type, dt.data)
 	}
 
 	post(msg, parent = null, ...callback) {
