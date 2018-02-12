@@ -10,11 +10,13 @@ class connection extends ws {
 		this.seq = 0
 		this.id = ''
 		this.uuid = ''
+		this.response = []
 		// Setting the basics for the connection.
 		this.once('open', data => {
 			callback.forEach(f => f(data))
 			this.emit('ready')
-			this.on('message', this.handleMsg)
+			this.on('message', this._handleMsg)
+			this.on('response', this._handleResponse)
 		})
 		this.once('identity', data => {
 			this.id = data.id
@@ -30,10 +32,9 @@ class connection extends ws {
 				}
 			}))
 		})
-
 	}
 
-	handleMsg(data, flags) {
+	_handleMsg(data, flags) {
 		const dt = JSON.parse(data)
 		this.emit(dt.type, dt)
 		if(dt.type === 'broadcast')
@@ -41,6 +42,9 @@ class connection extends ws {
 	}
 
 	post(msg, parent = null, ...callback) {
+
+		this._queueResponse(callback)
+
 		this.send(JSON.stringify({
 			type: 'broadcast',
 			seq: this.seq++,
@@ -52,12 +56,11 @@ class connection extends ws {
 			}
 		}))
 
-		this.once('response', data => {
-			callback.forEach(f => f(data))
-		})
 	}
 
 	pm(msg, recipient, ...callback) {
+
+		this._queueResponse(callback)
 
 		this.send(JSON.stringify({
 			type: 'unicast',
@@ -71,9 +74,6 @@ class connection extends ws {
 			}
 		}))
 
-		this.once('response', data => {
-			callback.forEach(f => f(data))
-		})
 	}
 
 	ping(...callback) {
@@ -96,6 +96,9 @@ class connection extends ws {
 	}
 
 	nick(nick, ...callback) {
+
+		this._queueResponse(callback)
+
 		this.send(JSON.stringify({
 			type: 'broadcast',
 			seq: this.seq++,
@@ -106,10 +109,16 @@ class connection extends ws {
 			}
 		}))
 
-		this.once('response', data => {
-			this.nick = nick
-			callback.forEach(f => f(data))
-		})
+		this.nick = nick
+
+	}
+
+	_queueResponse(callback) {
+		this.response[this.seq] = callback
+	}
+
+	_handleResponse(data) {
+		this.response[data.seq].forEach(f => f(data))
 	}
 
 }

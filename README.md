@@ -1,7 +1,7 @@
 # instant-connection [![Build Status](https://travis-ci.org/kaliumxyz/instant-connection.svg?branch=master)](https://travis-ci.org/kaliumxyz/instant-connection)
 > make connections to [instant](https://instant.leet.nu/) :D.
 
-this is a sister of the [euphoria-connection](https://github.com/kaliumxyz/euphoria-connection) lib.
+this is a sister of the [euphoria-connection](https://github.com/kaliumxyz/euphoria-connection) library and follows the same format.
 
 ## install
 simply download it from npm.
