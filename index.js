@@ -47,7 +47,10 @@ class connection extends ws {
 	}
 	
 	post(msg, parent = null, ...callback) {
+		this.postAs(msg, parent, this.nick, ...callback)
+	}
 
+	postAs(msg, parent = null, nick, ...callback) {
 		this._queueResponse(callback);
 
 		this.send(JSON.stringify({
@@ -55,7 +58,7 @@ class connection extends ws {
 			seq: this.seq++,
 			data: {
 				type: 'post',
-				nick: this.nick,
+				nick: nick,
 				text: msg,
 				parent: parent
 			}
@@ -91,6 +94,7 @@ class connection extends ws {
 			callback.forEach(f => f());
 		});
 	}
+
 	who(...callback) {
 		this.send(JSON.stringify({
 			type: 'broadcast',

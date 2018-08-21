@@ -20,19 +20,24 @@ const room = (process.argv.join().match(/-r,(\w+)/) || [,'test'])[1]
 
 const connection = new Connection(room);
 
-connection.once('ready', ev => {
-	connection.nick('choice');
+const queue = []
 
+connection.once('ready', ev => {
+
+	connection.nick('K9');
 	// on a broadcast, reply to the frigging post with one random choice
 	connection.on('broadcast', ev => {
-		log(ev)
-		if(ev.data.type === 'post' && ev.data.text)
-			if(ev.data.text.startsWith('.choose')){
-				const options = ev.data.text
-					.substring(7)
-					.split(',');
-				log(options);
-				connection.post(options[Math.floor(Math.random() * options.length)], ev.id);
-			}
+		if(ev.data.type === 'post' && ev.data.nick === "K" &&  ev.data.text){
+			if(queue.length)
+				queue.pop()()
+			if(ev.data.text.startsWith('!reverse'))
+				queue.push( _ =>connection.post(ev.data.text.split('').reverse().join('')))
+			let match = ev.data.text.match(/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
+			// match.forEach((x,i) => console.log(x,i))
+			if(match)
+				connection.post(match.map(x => `<${x}>`).join(' '), ev.data.parent)
+		}
 	});
 });
+
+
