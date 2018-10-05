@@ -133,13 +133,19 @@ class connection extends ws {
 		return this
 	}
 
+	_handleUnicast(data) {
+		// if we have a response ready and a response is given
+	}
+
 	_queueResponse(callback) {
 		this._response[this.seq] = callback;
 	}
 
 	_handleResponse(data) {
-		this._response[data.seq].forEach(f => f(data));
+		if (this._response[this.seq])
+			this._response[data.seq].forEach(f => f(data));
 	}
+
 
 }
 
