@@ -82,3 +82,72 @@ test('can reply', async t => {
 
 	t.truthy(await testPromise)
 })
+
+test('can send dm', async t => {
+	// const testPromise = new Promise(async (resolve, reject) => {
+		// const testPing = new connection('test')
+		// await new Promise((res, rej) => {
+		// 	testPing.once('ready', data => testConnection.nick("Ping", _ => {
+		// 		res()
+		// 	}))
+		// })
+	const ping = await new Promise(res => {
+		const connection = new Connection('test')
+		connection
+			.once('ready', function(data) {
+				connection.nick('ping')
+				res(connection)
+			})
+			.on('error', function(err) {
+				throw new Error(err);
+			})
+	})
+
+	const pong = await new Promise(res => {
+		const connection = new Connection('test')
+		connection
+			.once('ready', function(data) {
+				connection.nick('pong')
+				res(connection)
+			})
+			.on('error', function(err) {
+				throw new Error(err)
+			})
+			.on('unicast', console.log)
+	})
+
+	const msg = 'this is a test DM'
+
+
+	const reply = await new Promise(res => {
+		console.log(pong.id)
+		ping
+			.pm(msg, pong.id)
+			.on('unicast', res)
+	})
+
+	console.log(reply)
+	
+	t.is(reply, msg)
+})
+
+test.skip('snoop', async t => {
+	const snoop = await new Promise(res => {
+		const connection = new Connection('test')
+		connection
+			.once('ready', function(data) {
+				connection.nick('snoop')
+			})
+			.on('message', console.log)
+			.on('error', function(err) {
+				res(connection)
+				throw new Error(err);
+			})
+	})
+
+	t.is(reply, msg)
+})
+
+test
+
+
