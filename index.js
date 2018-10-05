@@ -42,7 +42,7 @@ class connection extends ws {
 			if(dt.type === 'broadcast')
 				this.emit(dt.data.type, dt);
 		} catch (e) {
-			console.log({error: e, data: data});
+			console.error({error: e, data: data});
 		}
 
 		return this
