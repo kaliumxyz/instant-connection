@@ -1,13 +1,13 @@
 import test from 'ava'
-const connection = require('./')
+const Connection = require('./')
 
 test('can create connection',t => {
-	t.true(new connection('test') instanceof connection)
+	t.true(new Connection('test') instanceof Connection)
 })
 
 test('can connect', async t => {
 	const testPromise = new Promise((resolve, reject) => {
-		const testConnection = new connection('test')
+		const testConnection = new Connection('test')
 		testConnection.once('ready', data => testConnection.ping(resolve))
 		setTimeout(() => reject('timed out'), 10000)
 	})
@@ -17,7 +17,7 @@ test('can connect', async t => {
 
 test('can change name', async t => {
 	const testPromise = new Promise((resolve, reject) => {
-		const testConnection = new connection('test')
+		const testConnection = new Connection('test')
 		testConnection.once('ready', data => testConnection.nick("can change name",resolve))
 		setTimeout(() => reject('timed out'), 10000)
 	})
@@ -27,7 +27,7 @@ test('can change name', async t => {
 
 test('can send msg', async t => {
 	const testPromise = new Promise((resolve, reject) => {
-		const testConnection = new connection('test')
+		const testConnection = new Connection('test')
 		testConnection.once('ready', data => testConnection.nick("can send msg", _ => {
 			testConnection.post("can send msg", null, () => resolve(true))
 		}))
@@ -37,9 +37,21 @@ test('can send msg', async t => {
 	t.true(await testPromise)
 })
 
+test('can send msg as', async t => {
+	const testPromise = new Promise((resolve, reject) => {
+		const testConnection = new Connection('test')
+		testConnection.once('ready', data => testConnection.nick("can send msg", _ => {
+			testConnection.postAs("can send msg as", null, 'wut', () => resolve(true))
+		}))
+		setTimeout(() => reject('timed out'), 10000)
+	})
+
+	t.true(await testPromise)
+})
+
 test.skip('can send 256 msgs', async t => {
 	const testPromise = new Promise((resolve, reject) => {
-		const testConnection = new connection('test')
+		const testConnection = new Connection('test')
 		// for the sake of the callback, we shall count down.
 		let post_counter = 0 
 		testConnection.once('ready', data => testConnection.nick("pew", _ => {
@@ -59,7 +71,7 @@ test.skip('can send 256 msgs', async t => {
 
 test('can reply', async t => {
 	const testPromise = new Promise((resolve, reject) => {
-		const testConnection = new connection('test')
+		const testConnection = new Connection('test')
 		testConnection.once('ready', data => testConnection.nick("can reply", _ => {
 			testConnection.post("post", null, data => {
 				testConnection.post("can reply", data.data.id, resolve)

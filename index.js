@@ -44,10 +44,14 @@ class connection extends ws {
 		} catch (e) {
 			console.log({error: e, data: data});
 		}
+
+		return this
 	}
 	
 	post(msg, parent = null, ...callback) {
 		this.postAs(msg, parent, this.nick, ...callback)
+
+		return this
 	}
 
 	postAs(msg, parent = null, nick, ...callback) {
@@ -64,6 +68,7 @@ class connection extends ws {
 			}
 		}));
 
+		return this
 	}
 
 	pm(msg, recipient, ...callback) {
@@ -81,6 +86,7 @@ class connection extends ws {
 				type: 'privmsg',
 			}
 		}));
+		return this
 
 	}
 
@@ -93,6 +99,8 @@ class connection extends ws {
 		this.once('pong', data => {
 			callback.forEach(f => f());
 		});
+
+		return this
 	}
 
 	who(...callback) {
@@ -102,6 +110,8 @@ class connection extends ws {
 			data: {type: 'who'}
 		}));
 		callback.forEach(f => f());
+
+		return this
 	}
 
 	nick(nick, ...callback) {
@@ -120,6 +130,7 @@ class connection extends ws {
 
 		this._nick = nick;
 
+		return this
 	}
 
 	_queueResponse(callback) {
