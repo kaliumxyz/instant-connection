@@ -12,7 +12,6 @@ class connection extends ws {
 		// Setting the basics for the connection.
 		this.once('open', data => {
 			callback.forEach(f => f(data));
-			this.emit('ready');
 			this.on('message', this._handleMsg);
 			this.on('response', this._handleResponse);
 		});
@@ -20,6 +19,7 @@ class connection extends ws {
 			data = data.data;
 			this.id = data.id;
 			this.uuid = data.uuid;
+			this.emit('ready');
 		});
 		this.on('who', data => {
 			this.send(JSON.stringify({
