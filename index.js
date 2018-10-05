@@ -13,7 +13,6 @@ class connection extends ws {
 		this.once('open', data => {
 			callback.forEach(f => f(data));
 			this.on('message', this._handleMsg);
-			this.on('response', this._handleResponse);
 		});
 		this.once('identity', data => {
 			data = data.data;
@@ -38,6 +37,8 @@ class connection extends ws {
 	_handleMsg(data, flags) {
 		try {
 			const dt = JSON.parse(data);
+			if(dt.type === 'response')
+				this.on('response', this._handleResponse);
 			this.emit(dt.type, dt);
 			if(dt.type === 'broadcast')
 				this.emit(dt.data.type, dt);
