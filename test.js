@@ -41,7 +41,7 @@ test('can send msg as', async t => {
 	const testPromise = new Promise((resolve, reject) => {
 		const testConnection = new Connection('test');
 		testConnection.once('ready', data => testConnection.nick('can send msg', _ => {
-			testConnection.postAs('can send msg as', null, 'wut', () => resolve(true));
+			testConnection.postAs('can send msg as', null, 'can send msg as', () => resolve(true));
 		}));
 		setTimeout(() => reject('timed out'), 10000);
 	});
