@@ -8,6 +8,7 @@ class connection extends ws {
 		this.seq = 0;
 		this.id = '';
 		this.uuid = '';
+		this._log = {};
 		this._response = [];
 		// Setting the basics for the connection.
 		this.once('open', data => {
@@ -37,58 +38,46 @@ class connection extends ws {
 	_handleMsg(data, flags) {
 		try {
 			const dt = JSON.parse(data);
-			if(dt.type === 'response')
+			if (dt.type === 'response')
 				this.on('response', this._handleResponse);
 			this.emit(dt.type, dt);
-			if(dt.type === 'broadcast')
+			if (dt.type === 'broadcast')
 				this.emit(dt.data.type, dt);
 		} catch (e) {
 			console.error({error: e, data: data});
 		}
 
-		return this
+		return this;
 	}
-	
-	post(msg, parent = null, ...callback) {
-		this.postAs(msg, parent, this.nick, ...callback)
 
-		return this
+	post(msg, parent = null, ...callback) {
+		this.postAs(msg, parent, this._nick, ...callback);
+
+		return this;
 	}
 
 	postAs(msg, parent = null, nick, ...callback) {
-		this._queueResponse(callback);
-
-		this.send(JSON.stringify({
-			type: 'broadcast',
-			seq: this.seq++,
-			data: {
+		this
+			._queueResponse(callback)
+			.broadcast({
 				type: 'post',
 				nick: nick,
 				text: msg,
 				parent: parent
-			}
-		}));
+			});
 
-		return this
+		return this;
 	}
 
 	pm(msg, recipient, ...callback) {
-
-		this._queueResponse(callback);
-
-		this.send(JSON.stringify({
-			type: 'unicast',
-			seq: this.seq++,
-			uuid: this.uuid,
-			to: recipient,
-			data: {
-				nick: this.nick,
+		this
+			._queueResponse(callback)
+			.unicast({
 				text: msg,
-				type: 'privmsg',
-			}
-		}));
-		return this
+				type: 'privmsg'
+			}, recipient);
 
+		return this;
 	}
 
 	ping(...callback) {
@@ -101,53 +90,61 @@ class connection extends ws {
 			callback.forEach(f => f());
 		});
 
-		return this
+		return this;
 	}
 
 	who(...callback) {
-		this.send(JSON.stringify({
-			type: 'broadcast',
-			seq: this.seq++,
-			data: {type: 'who'}
-		}));
+		this.broadcast({type: 'who'});
 		callback.forEach(f => f());
 
-		return this
+		return this;
 	}
 
 	nick(nick, ...callback) {
-
-		this._queueResponse(callback);
-
-		this.send(JSON.stringify({
-			type: 'broadcast',
-			seq: this.seq++,
-			data: {
+		this
+			._queueResponse(callback)
+			.broadcast({
 				type: 'nick',
 				uuid: this.uuid,
 				nick: nick
-			}
-		}));
+			});
 
 		this._nick = nick;
 
-		return this
+		return this;
 	}
 
-	_handleUnicast(data) {
-		// if we have a response ready and a response is given
+	unicast(data, to) {
+		this.send(JSON.stringify({
+			type: 'unicast',
+			seq: this.seq,
+			to: to,
+			data: data
+		}));
+
+		return this;
+	}
+
+	broadcast(data) {
+		this.send(JSON.stringify({
+			type: 'broadcast',
+			seq: this.seq,
+			data: data
+		}));
+
+		return this;
 	}
 
 	_queueResponse(callback) {
-		this._response[this.seq] = callback;
+		this._response[++this.seq] = callback;
+		return this;
 	}
 
 	_handleResponse(data) {
 		if (this._response[this.seq])
 			this._response[data.seq].forEach(f => f(data));
+		return this;
 	}
-
-
 }
 
 module.exports = connection;
