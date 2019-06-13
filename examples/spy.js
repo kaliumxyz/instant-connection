@@ -70,15 +70,21 @@ function print(tree, depth = 0, is_last_child_of_root = false) {
     if (depth === 1)
         is_last_child_of_root = i == tree.length-1;
     let padding = "";
+    let extended_padding = "";
+    for (let i=0; i < x.nick.length + 2; i++) {
+      extended_padding += " ";
+    }
     for (let i=0; i < depth; i++) {
       padding += "─";
+      extended_padding += " ";
     }
+    let last = i == tree.length-1;
+    let text = x.text.replace(/(\r\n|\n|\r)/gm, `\n${extended_padding}`); //@Xyzzy you want this.
     if (x.children) {
-      console.log(`${depth>0?"├":"┌"}${padding}${x.nick} ${x.text}`);
+      console.log(`${depth>0?"├":"┌"}${padding}${x.nick} ${text}`);
       print(x.children, depth + 1, is_last_child_of_root);
     } else {
-      let last = i == tree.length-1;
-      console.log(`${depth>0?last?is_last_child_of_root?"└":"├":"├":"╶"}${padding}${x.nick} ${x.text}`);
+      console.log(`${depth>0?last?is_last_child_of_root?"└":"├":"├":"╶"}${padding}${x.nick} ${text}`);
     }
   });
 }
