@@ -1,5 +1,5 @@
 'use strict';
-const ws = require('ws');
+const ws = require('isomorphic-ws');
 
 class connection extends ws {
   constructor(room = 'welcome', uri = 'wss://instant.leet.nu', options = { origin: 'instant.leet.nu', visible: true, nick: undefined }, ...callback) {
