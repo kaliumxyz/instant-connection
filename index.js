@@ -9,7 +9,6 @@ class connection extends ws {
     this.id = '';
     this.uuid = '';
     this._response = [];
-    this._userlist = [];
     this._nick = options.nick;
     this.visible = options.visible;
     // Setting the basics for the connection.
@@ -57,17 +56,7 @@ class connection extends ws {
         this.emit(json.type, json);
         this.emit(json.data.type, json);
         break;
-      case 'joined':
-        if (this._userlist[json.data.id]) {
-          this._userlist[json.data.id].left = false;
-        } else {
-          this._userlist[json.data.id] = json.data;
-        }
-        break;
-      case 'left':
-        this._userlist[json.data.id].left = true;
-        break;
-      default:
+      default: // left and joined events go here
         this.emit(json.type, json);
         break;
       }
