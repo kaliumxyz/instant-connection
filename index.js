@@ -2,149 +2,186 @@
 const ws = require('ws');
 
 class connection extends ws {
-	constructor(room = 'welcome', uri = 'https://instant.leet.nu', options = { origin: 'instant.leet.nu' }, ...callback) {
-		super(uri + '/room/' + room + '/ws', options);
-		this.room = room;
-		this.seq = 0;
-		this.id = '';
-		this.uuid = '';
-		this._log = {};
-		this._response = [];
-		// Setting the basics for the connection.
-		this.once('open', data => {
-			callback.forEach(f => f(data));
-			this.on('message', this._handleMsg);
-		});
-		this.once('identity', data => {
-			data = data.data;
-			this.id = data.id;
-			this.uuid = data.uuid;
-			this.emit('ready');
-		});
-		this.on('who', data => {
-			this.send(JSON.stringify({
-				type: 'unicast',
-				to: data.from,
-				seq: this.seq++,
-				data: {
-					type: 'nick',
-					nick: this._nick,
-					uuid: this.uuid
-				}
-			}));
-		});
-	}
+  constructor(room = 'welcome', uri = 'wss://instant.leet.nu', options = { origin: 'instant.leet.nu', visible: true, nick: undefined }, ...callback) {
+    super(uri + '/room/' + room + '/ws', options);
+    this.room = room;
+    this.seq = 0;
+    this.id = '';
+    this.uuid = '';
+    this._log = {};
+    this._response = [];
+    this._userlist = [];
+    this._nick = options.nick;
+    this.visible = options.visible;
+    // Setting the basics for the connection.
+    this.once('open', data => {
+      callback.forEach(f => f(data));
+      this.on('message', this._handleMsg);
+    });
+    this.once('identity', data => {
+      data = data.data;
+      this.id = data.id;
+      this.uuid = data.uuid;
+      this.emit('ready');
+    });
 
-	_handleMsg(data, flags) {
-		try {
-			const dt = JSON.parse(data);
-			if (dt.type === 'response')
-				this.on('response', this._handleResponse);
-			this.emit(dt.type, dt);
-			if (dt.type === 'broadcast')
-				this.emit(dt.data.type, dt);
-		} catch (e) {
-			console.error({error: e, data: data});
-		}
+    this.setMaxListeners(1028); // solve all problems in life by sweeping them under the curtain.
+    // TODO: add option for log replies
+    this.on('who', data => {
+      if (this.visible === true) {
+        this.send(JSON.stringify({
+          type: 'unicast',
+          to: data.from,
+          seq: this.seq++,
+          data: {
+            type: 'nick',
+            nick: this._nick,
+            uuid: this.uuid
+          }
+        }));
+      }
+    });
+  }
 
-		return this;
-	}
+  _handleMsg(data, flags) {
+    try {
+      const json = JSON.parse(data);
+      switch (json.type) {
+      case 'response':
+        this.on('response', this._handleResponse);
+        break;
+      case 'broadcast':
+        this.emit(json.type, json);
+        this.emit(json.data.type, json);
+        break;
+      case 'unicast':
+        this.emit(json.type, json);
+        this.emit(json.data.type, json);
+        break;
+      case 'joined':
+        if (this._userlist[json.data.id]) {
+          this._userlist[json.data.id].left = false;
+        } else {
+          this._userlist[json.data.id] = json.data;
+        }
+        break;
+      case 'left':
+        this._userlist[json.data.id].left = true;
+        break;
+      default:
+        this.emit(json.type, json);
+        break;
+      }
+    } catch (e) {
+      console.error({error: e, data: data});
+    }
 
-	post(msg, parent = null, ...callback) {
-		this.postAs(msg, parent, this._nick, ...callback);
+    return this;
+  }
 
-		return this;
-	}
+  post(msg, parent = null, ...callback) {
+    this.postAs(msg, parent, this._nick, ...callback);
 
-	postAs(msg, parent = null, nick, ...callback) {
-		this
-			._queueResponse(callback)
-			.broadcast({
-				type: 'post',
-				nick: nick,
-				text: msg,
-				parent: parent
-			});
+    return this;
+  }
 
-		return this;
-	}
+  postAs(msg, parent = null, nick, ...callback) {
+    this
+      ._queueResponse(callback)
+      .broadcast({
+        type: 'post',
+        nick: nick,
+        text: msg,
+        parent: parent
+      });
 
-	pm(msg, recipient, ...callback) {
-		this
-			._queueResponse(callback)
-			.unicast({
-				text: msg,
-				type: 'privmsg'
-			}, recipient);
+    return this;
+  }
 
-		return this;
-	}
+  pm(msg, recipient, ...callback) {
+    this
+      ._queueResponse(callback)
+      .unicast({
+        text: msg,
+        type: 'privmsg'
+      }, recipient);
 
-	ping(...callback) {
-		this.send(JSON.stringify({
-			seq: this.seq++,
-			type: 'ping'
-		}));
+    return this;
+  }
 
-		this.once('pong', data => {
-			callback.forEach(f => f());
-		});
+  ping(...callback) {
+    this.send(JSON.stringify({
+      seq: this.seq++,
+      type: 'ping'
+    }));
 
-		return this;
-	}
+    this.once('pong', data => {
+      callback.forEach(f => f());
+    });
 
-	who(...callback) {
-		this.broadcast({type: 'who'});
-		callback.forEach(f => f());
+    return this;
+  }
 
-		return this;
-	}
+  who(...callback) {
+    this.broadcast({type: 'who'});
+    callback.forEach(f => f());
 
-	nick(nick, ...callback) {
-		this
-			._queueResponse(callback)
-			.broadcast({
-				type: 'nick',
-				uuid: this.uuid,
-				nick: nick
-			});
+    return this;
+  }
 
-		this._nick = nick;
+  nick(nick, ...callback) {
+    this
+      ._queueResponse(callback)
+      .broadcast({
+        type: 'nick',
+        uuid: this.uuid,
+        nick: nick
+      });
 
-		return this;
-	}
+    this._nick = nick;
 
-	unicast(data, to) {
-		this.send(JSON.stringify({
-			type: 'unicast',
-			seq: this.seq,
-			to: to,
-			data: data
-		}));
+    return this;
+  }
 
-		return this;
-	}
+  unicast(data, to) {
+    this.send(JSON.stringify({
+      type: 'unicast',
+      seq: this.seq,
+      to: to,
+      data: data
+    }));
 
-	broadcast(data) {
-		this.send(JSON.stringify({
-			type: 'broadcast',
-			seq: this.seq,
-			data: data
-		}));
+    return this;
+  }
 
-		return this;
-	}
+  broadcast(data) {
+    this.send(JSON.stringify({
+      type: 'broadcast',
+      seq: this.seq,
+      data: data
+    }));
 
-	_queueResponse(callback) {
-		this._response[++this.seq] = callback;
-		return this;
-	}
+    return this;
+  }
 
-	_handleResponse(data) {
-		if (this._response[this.seq])
-			this._response[data.seq].forEach(f => f(data));
-		return this;
-	}
+  cast(data, to) {
+    if (to === undefined) {
+      return broadcast(data);
+    } else {
+      return unicast(data, to);
+    }
+  }
+
+  _queueResponse(callback) {
+    this._response[++this.seq] = callback;
+    return this;
+  }
+
+  _handleResponse(data) {
+    if (this._response[this.seq])
+      this._response[data.seq].forEach(f => f(data));
+    return this;
+  }
 }
 
 module.exports = connection;
