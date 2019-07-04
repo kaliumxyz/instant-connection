@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/bin/env node
 "use strict";
 const readline = require('readline');
 const fs = require('fs');
@@ -21,18 +21,12 @@ const room = (process.argv.join().match(/-r,(\w+)/) || [,'test'])[1]
 const connection = new Connection(room);
 
 connection.once('ready', ev => {
-	connection.nick('choice');
+	connection.nick('K');
 
 	// on a broadcast, reply to the frigging post with one random choice
 	connection.on('broadcast', ev => {
 		log(ev)
-		if(ev.data.type === 'post' && ev.data.text)
-			if(ev.data.text.startsWith('.choose')){
-				const options = ev.data.text
-					.substring(7)
-					.split(',');
-				log(options);
-				connection.post(options[Math.floor(Math.random() * options.length)], ev.id);
-			}
+		if(ev.data.type === 'post' && ev.data.nick !== "K" &&  ev.data.text)
+			connection.post(ev.data.text.split('').reverse().join(''), ev.data.parent)
 	});
 });
