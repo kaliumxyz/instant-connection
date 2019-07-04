@@ -1,6 +1,6 @@
 import test from 'ava';
 const Connection = require('./');
-const uri = 'ws://localhost:4200';
+const uri = 'wss://instant.leet.nu';
 
 test('can create connection', t => {
   t.true(new Connection('test', uri) instanceof Connection);
@@ -50,7 +50,7 @@ test('can send msg as', async t => {
   t.true(await testPromise);
 });
 
-test.only('can send 256 msgs', async t => {
+test.skip('can send 256 msgs', async t => {
   const testPromise = new Promise((resolve, reject) => {
     const testConnection = new Connection('test', uri);
     // for the sake of the callback, we shall count down.

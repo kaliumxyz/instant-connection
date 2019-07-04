@@ -8,7 +8,6 @@ class connection extends ws {
     this.seq = 0;
     this.id = '';
     this.uuid = '';
-    this._log = {};
     this._response = [];
     this._userlist = [];
     this._nick = options.nick;
@@ -48,7 +47,7 @@ class connection extends ws {
       const json = JSON.parse(data);
       switch (json.type) {
       case 'response':
-        this.on('response', this._handleResponse);
+        this._handleResponse(json);
         break;
       case 'broadcast':
         this.emit(json.type, json);
